@@ -72,11 +72,19 @@ class RegisterPage(FormView):
 class TaskList(LoginRequiredMixin, ListView):
     model = Task
     context_object_name = 'tasks'
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-
+        context['tasks'] = context['tasks'].filter(user=self.request.user)
+        context['count'] = context['tasks'].filter(complete=False).count()
+        search_input = self.request.GET.get('search') or ''
+        category_filter = self.request.GET.get('category')  # Seçilen kategori
+        if search_input:
+            context['tasks'] = context['tasks'].filter(
+                title__contains=search_input) | context['tasks'].filter(description__contains=search_input)
+        if category_filter:  # Kategoriye göre filtreleme
+            context['tasks'] = context['tasks'].filter(category=category_filter)
+        context['search_input'] = search_input
+        context['selected_category'] = category_filter  # Şu an seçili olan kategori
         return context
 
 
@@ -102,7 +110,7 @@ class TaskUpdate(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('tasks')
     def get_queryset(self):
         owner = self.request.user
-        return self.model.objects.filter(user=owner)
+        return self.model.objects.filter(user=owner,is_deleted=False)
 
 
 class DeleteView(LoginRequiredMixin, DeleteView):
@@ -111,7 +119,7 @@ class DeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('tasks')
     def get_queryset(self):
         owner = self.request.user
-        return self.model.objects.filter(user=owner)
+        return self.model.objects.filter(user=owner,is_deleted=False)
 
 class TaskReorder(View):
     def post(self, request):

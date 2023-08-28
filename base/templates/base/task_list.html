@@ -171,6 +171,11 @@
           xhr.setRequestHeader("X-CSRFToken", csrftoken);
         },
         success: function (response) {
+          // Task'ı is_deleted = True olarak güncelleyin
+          var task = response.task;
+          task.is_deleted = True;
+          task.save();
+
           alert("Task deleted successfully.");
         },
         error: function (error) {},
