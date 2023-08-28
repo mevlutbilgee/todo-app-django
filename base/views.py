@@ -75,21 +75,7 @@ class TaskList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tasks'] = context['tasks'].filter(user=self.request.user)
-        context['count'] = context['tasks'].filter(complete=False).count()
 
-        search_input = self.request.GET.get('search') or ''
-        category_filter = self.request.GET.get('category')  # Seçilen kategori
-
-        if search_input:
-            context['tasks'] = context['tasks'].filter(
-                title__contains=search_input) | context['tasks'].filter(description__contains=search_input)
-
-        if category_filter:  # Kategoriye göre filtreleme
-            context['tasks'] = context['tasks'].filter(category=category_filter)
-
-        context['search_input'] = search_input
-        context['selected_category'] = category_filter  # Şu an seçili olan kategori
 
         return context
 
